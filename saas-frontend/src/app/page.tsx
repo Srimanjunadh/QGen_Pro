@@ -30,7 +30,7 @@ export default function Home() {
 
       // Check if authentication failed
       if (!data.success) {
-        setError(data.message || "Invalid Login ID or Password");
+        setError(data.error || data.message || "Invalid Login ID or Password");
         setLoading(false);
         return;
       }
