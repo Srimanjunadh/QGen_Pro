@@ -68,7 +68,7 @@ export const getPapers = async (req: Request, res: Response) => {
 
 export const getPaperById = async (req: Request, res: Response) => {
   try {
-    const paper = await prisma.paper.findUnique({ where: { id: req.params.id } });
+    const paper = await prisma.paper.findUnique({ where: { id: String(req.params.id) } });
     if (!paper) return res.status(404).json({ success: false, message: "Paper not found" });
     
     res.json({ success: true, paper });
