@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  books     Book[]
+  papers    Paper[]
+  createdAt DateTime @default(now())
+}
+
+model Book {
+  id           String   @id @default(uuid())
+  title        String
+  subjectId    String
+  subject      Subject  @relation(fields: [subjectId], references: [id])
+  format       String   // PDF, DOCX
+  content      String   // Extracted text
+  chapters     String?  // Optional chapter breakdown (JSON string)
+  createdAt    DateTime @default(now())
+}
+
+model Paper {
+  id          String   @id @default(uuid())
+  title       String
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  duration    Int      // in minutes
+  maxMarks    Int
+  config      String   // Store the generation config (JSON string)
+  content     String   // The generated questions structured (JSON string)
+  pdfUrl      String?
+  createdAt   DateTime @default(now())
+}

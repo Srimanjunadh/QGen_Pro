@@ -1,0 +1,8 @@
+node_modules/
+.env
+dist/
+dev.db
+*.log
+.next/
+out/
+build/
