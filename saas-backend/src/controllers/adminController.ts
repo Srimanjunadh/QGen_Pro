@@ -48,7 +48,7 @@ export const getStudents = async (req: Request, res: Response) => {
 // Update student status (suspend, block, extend)
 export const updateStudentStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status, validUntil } = req.body;
 
     const updated = await prisma.student.update({
@@ -69,7 +69,7 @@ export const updateStudentStatus = async (req: Request, res: Response) => {
 // Publish exam and assign to all active students
 export const publishExam = async (req: Request, res: Response) => {
   try {
-    const { paperId } = req.params;
+    const paperId = req.params.paperId as string;
     const { positiveMarks, negativeMarks } = req.body;
 
     // Update the paper to published and set marks
@@ -119,7 +119,7 @@ export const publishExam = async (req: Request, res: Response) => {
 // Get stats for a published exam
 export const getExamStats = async (req: Request, res: Response) => {
   try {
-    const { paperId } = req.params;
+    const paperId = req.params.paperId as string;
 
     const assignments = await prisma.examAssignment.findMany({
       where: { paperId },

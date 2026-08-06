@@ -110,7 +110,7 @@ export const getAssignedExams = async (req: Request, res: Response) => {
   try {
     // We assume the user ID is passed from an auth middleware, for now let's just use studentId from params
     // In a real app, use req.user.id
-    const { studentId } = req.params;
+    const studentId = req.params.studentId as string;
 
     const assignments = await prisma.examAssignment.findMany({
       where: { studentId },
@@ -134,7 +134,7 @@ export const getAssignedExams = async (req: Request, res: Response) => {
 // Get exam assignment details to start
 export const getExamDetails = async (req: Request, res: Response) => {
   try {
-    const { assignmentId } = req.params;
+    const assignmentId = req.params.assignmentId as string;
 
     const assignment = await prisma.examAssignment.findUnique({
       where: { id: assignmentId },
@@ -168,7 +168,7 @@ export const getExamDetails = async (req: Request, res: Response) => {
 // Submit Exam
 export const submitExam = async (req: Request, res: Response) => {
   try {
-    const { assignmentId } = req.params;
+    const assignmentId = req.params.assignmentId as string;
     const { answers, marks, reportData } = req.body;
 
     const updated = await prisma.examAssignment.update({
