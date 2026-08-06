@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { 
   PieChart, Pie, Cell, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from "recharts";
-import { Target, BrainCircuit, ShieldAlert, CheckCircle2, ChevronLeft, XCircle, MinusCircle, ListOrdered } from "lucide-react";
+import { Target, BrainCircuit, ShieldAlert, CheckCircle2, ChevronLeft, XCircle, MinusCircle, ListOrdered, FileText } from "lucide-react";
 import Link from "next/link";
 
 const COLORS = ['#0ea5e9', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e', '#f97316'];
@@ -14,7 +14,10 @@ const BREAKDOWN_COLORS = { correct: '#10b981', incorrect: '#f43f5e', unattempted
 
 export default function AdminStudentReportView() {
   const { studentId } = useParams();
+  const searchParams = useSearchParams();
+  const assignmentId = searchParams.get('assignmentId');
   const router = useRouter();
+  
   const [student, setStudent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,14 +37,12 @@ export default function AdminStudentReportView() {
     fetchReport();
   }, [studentId]);
 
-  if (loading) return <div className="p-12 text-center text-surface-500 font-medium">Loading detailed analysis...</div>;
+  if (loading) return <div className="p-12 text-center text-surface-500 font-medium">Loading data...</div>;
   if (!student) return <div className="p-12 text-center text-red-500 font-medium">Student not found.</div>;
 
-  // Get the latest completed assignment for this student
   const completedAssignments = student.assignments?.filter((a: any) => a.status === 'COMPLETED') || [];
-  const assignment = completedAssignments.length > 0 ? completedAssignments[completedAssignments.length - 1] : null;
 
-  if (!assignment) {
+  if (completedAssignments.length === 0) {
     return (
       <div className="p-12 text-center">
         <h2 className="text-2xl font-bold text-surface-900 mb-2">{student.name}</h2>
@@ -49,6 +50,51 @@ export default function AdminStudentReportView() {
         <Link href="/dashboard/students" className="mt-4 inline-block text-brand-600 hover:underline">Back to Students</Link>
       </div>
     );
+  }
+
+  // If no specific assignment is selected, show the list of all completed reports
+  if (!assignmentId) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto pb-12">
+        <Link href="/dashboard/students" className="inline-flex items-center gap-2 text-surface-500 hover:text-surface-900 transition mb-2">
+          <ChevronLeft className="w-4 h-4" /> Back to Students
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-surface-900">{student.name}'s Exam Reports</h1>
+          <p className="text-surface-500">Select an exam below to view the detailed performance report.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {completedAssignments.map((a: any) => (
+            <Link key={a.id} href={`/dashboard/reports/${studentId}?assignmentId=${a.id}`}>
+              <div className="bg-white rounded-2xl p-6 border border-surface-200 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                    <FileText className="w-5 h-5 text-brand-600" />
+                  </div>
+                  <span className="text-xs font-bold px-3 py-1 bg-brand-50 text-brand-700 rounded-full">
+                    Score: {a.marks}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-surface-900 mb-1">{a.paper?.title}</h3>
+                <p className="text-sm text-brand-600 font-medium mb-3">{a.paper?.subject?.name}</p>
+                <div className="text-xs text-surface-500 flex justify-between items-center">
+                  <span>Completed on {new Date(a.completedAt).toLocaleDateString()}</span>
+                  <span className="text-brand-600 font-medium group-hover:underline">View Report</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show detailed report for the selected assignment
+  const assignment = completedAssignments.find((a: any) => a.id === assignmentId);
+  
+  if (!assignment) {
+    return <div className="p-12 text-center text-red-500">Report not found.</div>;
   }
 
   let reportData: any = { 
@@ -76,8 +122,8 @@ export default function AdminStudentReportView() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      <Link href="/dashboard/students" className="inline-flex items-center gap-2 text-surface-500 hover:text-surface-900 transition mb-2">
-        <ChevronLeft className="w-4 h-4" /> Back to Students
+      <Link href={`/dashboard/reports/${studentId}`} className="inline-flex items-center gap-2 text-surface-500 hover:text-surface-900 transition mb-2">
+        <ChevronLeft className="w-4 h-4" /> Back to All Reports
       </Link>
 
       {/* Header Card */}
@@ -87,7 +133,7 @@ export default function AdminStudentReportView() {
         </div>
         <div className="relative z-10 space-y-2 text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">{student.name}'s Report</h1>
-          <p className="text-brand-100 text-lg">College ID: {student.registrationNumber}</p>
+          <p className="text-brand-100 text-lg">College ID: {student.registrationNumber} • {assignment.paper?.title}</p>
           <div className="inline-block mt-4 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
             <span className="text-brand-50 font-medium">Exam Completed on {new Date(assignment.completedAt).toLocaleDateString()}</span>
           </div>
