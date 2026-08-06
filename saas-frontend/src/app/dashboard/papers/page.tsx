@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, Search, Filter, MoreVertical, Eye, Printer, Calendar } from "lucide-react";
-import { motion } from "framer-motion";
+import { FileText, Search, Filter, MoreVertical, Eye, Printer, Calendar, Send } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 interface Paper {
@@ -12,11 +12,17 @@ interface Paper {
   duration: number;
   maxMarks: number;
   createdAt: string;
+  isPublished?: boolean;
 }
 
 export default function GeneratedPapers() {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
+  const [positiveMarks, setPositiveMarks] = useState("1");
+  const [negativeMarks, setNegativeMarks] = useState("0");
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     const fetchPapers = async () => {
@@ -39,6 +45,40 @@ export default function GeneratedPapers() {
     fetchPapers();
   }, []);
 
+  const handlePublishClick = (paper: Paper) => {
+    setSelectedPaper(paper);
+    setPublishModalOpen(true);
+  };
+
+  const confirmPublish = async () => {
+    if (!selectedPaper) return;
+    try {
+      setPublishing(true);
+      const token = localStorage.getItem("token") || "";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      
+      const res = await fetch(`${API_URL}/api/admin/papers/${selectedPaper.id}/publish`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ positiveMarks, negativeMarks })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setPapers(papers.map(p => p.id === selectedPaper.id ? { ...p, isPublished: true } : p));
+        setPublishModalOpen(false);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Failed to publish", error);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -54,17 +94,17 @@ export default function GeneratedPapers() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-surface-200/60 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm bg-white text-surface-900 border border-surface-200/60 overflow-hidden">
         <div className="p-4 border-b border-surface-200/60 flex flex-col sm:flex-row gap-4 justify-between items-center bg-surface-50">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
             <input 
               type="text" 
               placeholder="Search papers..." 
-              className="w-full pl-10 pr-4 py-2 bg-white border border-surface-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-surface-900"
+              className="w-full pl-10 pr-4 py-2 bg-white bg-white text-surface-900 border border-surface-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-surface-900"
             />
           </div>
-          <button className="px-4 py-2 bg-white border border-surface-200 rounded-lg text-sm font-medium text-surface-600 hover:bg-surface-50 flex items-center gap-2 w-full sm:w-auto transition-colors">
+          <button className="px-4 py-2 bg-white bg-white text-surface-900 border border-surface-200 rounded-lg text-sm font-medium text-surface-600 hover:bg-surface-50 flex items-center gap-2 w-full sm:w-auto transition-colors">
             <Filter className="w-4 h-4" />
             Filter
           </button>
@@ -138,6 +178,13 @@ export default function GeneratedPapers() {
                         <button className="p-2 text-surface-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Print">
                           <Printer className="w-4 h-4" />
                         </button>
+                        <button 
+                          onClick={() => handlePublishClick(paper)}
+                          className={`p-2 rounded-lg transition-colors ${paper.isPublished ? "text-brand-600 bg-brand-50" : "text-surface-400 hover:text-brand-600 hover:bg-brand-50"}`} 
+                          title="Publish to Students"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
                         <button className="p-2 text-surface-400 hover:text-surface-900 hover:bg-surface-200 rounded-lg transition-colors">
                           <MoreVertical className="w-4 h-4" />
                         </button>
@@ -150,6 +197,62 @@ export default function GeneratedPapers() {
           )}
         </div>
       </div>
+
+      {/* Publish Modal */}
+      <AnimatePresence>
+        {publishModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            >
+              <h2 className="text-xl font-bold text-surface-900 mb-2">Publish Exam</h2>
+              <p className="text-surface-500 mb-6 text-sm">
+                Publishing <strong>{selectedPaper?.title}</strong> will assign it to all ACTIVE students.
+              </p>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 mb-1">Marks for Correct Answer</label>
+                  <input 
+                    type="number"
+                    value={positiveMarks}
+                    onChange={e => setPositiveMarks(e.target.value)}
+                    className="w-full px-4 py-2 bg-white text-surface-900 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 mb-1">Marks for Wrong Answer (Negative Marks)</label>
+                  <input 
+                    type="number"
+                    value={negativeMarks}
+                    onChange={e => setNegativeMarks(e.target.value)}
+                    className="w-full px-4 py-2 bg-white text-surface-900 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button 
+                  onClick={() => setPublishModalOpen(false)}
+                  className="px-4 py-2 text-surface-600 font-medium hover:bg-surface-100 rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmPublish}
+                  disabled={publishing}
+                  className="px-4 py-2 bg-brand-600 text-white font-medium hover:bg-brand-700 rounded-xl transition flex items-center gap-2"
+                >
+                  {publishing ? "Publishing..." : "Publish to Students"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

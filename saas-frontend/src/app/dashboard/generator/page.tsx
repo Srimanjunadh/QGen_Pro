@@ -56,6 +56,13 @@ export default function GeneratorWizard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [generatedPaperId, setGeneratedPaperId] = useState<string | null>(null);
+  
+  // Publish State
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [positiveMarks, setPositiveMarks] = useState("1");
+  const [negativeMarks, setNegativeMarks] = useState("0");
+  const [publishing, setPublishing] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
 
   // Subject Dropdown State
   const [subjectSearch, setSubjectSearch] = useState("");
@@ -131,29 +138,134 @@ export default function GeneratorWizard() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!generatedPaperId) return;
+    try {
+      setPublishing(true);
+      const token = localStorage.getItem("token") || "";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      
+      const res = await fetch(`${API_URL}/api/admin/papers/${generatedPaperId}/publish`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ positiveMarks, negativeMarks })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setIsPublished(true);
+        setPublishModalOpen(false);
+        alert(data.message);
+      } else {
+        alert(data.error || data.message || "Failed to publish");
+      }
+    } catch (error) {
+      console.error("Failed to publish", error);
+      alert("An error occurred while publishing");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const nextStep = () => setCurrentStep((p) => Math.min(p + 1, STEPS.length));
   const prevStep = () => setCurrentStep((p) => Math.max(p - 1, 1));
 
   if (success) {
     return (
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-24 px-4">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-24 px-4 relative">
         <div className="w-24 h-24 bg-emerald-100/50 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/10 backdrop-blur-xl">
           <CheckCircle2 className="w-12 h-12 text-emerald-600" />
         </div>
         <h2 className="text-3xl font-bold text-surface-900 mb-3 tracking-tight">Paper Generated!</h2>
         <p className="text-surface-500 mb-10 max-w-md text-center text-lg">Your highly structured, randomized question papers have been generated successfully.</p>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           <button onClick={() => window.location.reload()} className="px-6 py-3 bg-white border border-surface-200 hover:bg-surface-50 text-surface-700 rounded-xl font-medium transition-all shadow-sm">
             Generate Another
           </button>
           {generatedPaperId && (
             <Link href={`/dashboard/papers/${generatedPaperId}`}>
-              <button className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-brand-500/25">
+              <button className="px-6 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-xl font-medium transition-all shadow-sm">
                 View Paper
               </button>
             </Link>
           )}
+          {generatedPaperId && !isPublished && (
+            <button 
+              onClick={() => setPublishModalOpen(true)}
+              className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-brand-500/25"
+            >
+              Publish to Students
+            </button>
+          )}
+          {isPublished && (
+            <button disabled className="px-6 py-3 bg-emerald-100 text-emerald-700 rounded-xl font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" /> Published
+            </button>
+          )}
         </div>
+
+        {/* Publish Modal */}
+        {publishModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-900/40 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 border-b border-surface-200">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-surface-900">Publish Exam</h3>
+                  <button onClick={() => setPublishModalOpen(false)} className="text-surface-400 hover:text-surface-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-sm text-surface-500">
+                  Publishing this paper will immediately assign it to all currently active students. Set the grading rules below.
+                </p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-surface-700">Positive Marks (per correct answer)</label>
+                  <input 
+                    type="number" 
+                    value={positiveMarks}
+                    onChange={(e) => setPositiveMarks(e.target.value)}
+                    className="w-full px-4 py-2 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none text-surface-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-surface-700">Negative Marks (per incorrect answer)</label>
+                  <input 
+                    type="number" 
+                    step="0.25"
+                    value={negativeMarks}
+                    onChange={(e) => setNegativeMarks(e.target.value)}
+                    className="w-full px-4 py-2 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none text-surface-900 bg-white"
+                  />
+                  <p className="text-xs text-surface-500">Example: 0.25 or 1</p>
+                </div>
+              </div>
+              <div className="p-4 bg-surface-50 border-t border-surface-200 flex justify-end gap-3">
+                <button 
+                  onClick={() => setPublishModalOpen(false)}
+                  className="px-4 py-2 bg-white border border-surface-200 text-surface-700 rounded-xl font-medium hover:bg-surface-100 transition"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handlePublish}
+                  disabled={publishing}
+                  className="px-4 py-2 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 transition flex items-center gap-2"
+                >
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Publish"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </motion.div>
     );
   }

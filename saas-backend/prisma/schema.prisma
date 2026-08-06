@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -36,14 +36,62 @@ model Book {
 }
 
 model Paper {
+  id            String   @id @default(uuid())
+  title         String
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id])
+  duration      Int      // in minutes
+  maxMarks      Int
+  config        String   // Store the generation config (JSON string)
+  content       String   // The generated questions structured (JSON string)
+  pdfUrl        String?
+  positiveMarks Float?
+  negativeMarks Float?
+  isPublished   Boolean  @default(false)
+  assignments   ExamAssignment[]
+  createdAt     DateTime @default(now())
+}
+
+model RegistrationCode {
   id          String   @id @default(uuid())
-  title       String
-  subjectId   String
-  subject     Subject  @relation(fields: [subjectId], references: [id])
-  duration    Int      // in minutes
-  maxMarks    Int
-  config      String   // Store the generation config (JSON string)
-  content     String   // The generated questions structured (JSON string)
-  pdfUrl      String?
+  code        String   @unique
+  isValid     Boolean  @default(true)
+  maxUses     Int      @default(1)
+  currentUses Int      @default(0)
+  students    Student[]
   createdAt   DateTime @default(now())
+}
+
+model Student {
+  id                 String   @id @default(uuid())
+  registrationNumber String   @unique // College Registration Number
+  password           String
+  name               String
+  year               String
+  section            String
+  mlNumber           String
+  fatherName         String
+  mobileNumber       String
+  status             String   @default("ACTIVE") // ACTIVE, SUSPENDED, BLOCKED
+  validUntil         DateTime?
+  codeId             String?
+  code               RegistrationCode? @relation(fields: [codeId], references: [id])
+  assignments        ExamAssignment[]
+  createdAt          DateTime @default(now())
+}
+
+model ExamAssignment {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  paperId     String
+  paper       Paper    @relation(fields: [paperId], references: [id])
+  status      String   @default("PENDING") // PENDING, STARTED, COMPLETED
+  marks       Float?
+  reportData  String?  // JSON containing detailed report
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@unique([studentId, paperId])
 }

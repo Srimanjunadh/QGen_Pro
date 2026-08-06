@@ -21,6 +21,7 @@ const navItems = [
   { icon: BookOpen, label: "Textbooks", href: "/dashboard/books" },
   { icon: Settings2, label: "Generate Paper", href: "/dashboard/generator" },
   { icon: FileText, label: "Generated Papers", href: "/dashboard/papers" },
+  { icon: Bell, label: "Students", href: "/dashboard/students" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
 
