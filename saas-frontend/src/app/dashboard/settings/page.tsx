@@ -46,23 +46,23 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-surface-700">First Name</label>
-                <input type="text" defaultValue="Admin" className="w-full px-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" />
+                <input type="text" defaultValue="Admin" className="w-full px-4 py-2.5 bg-white text-surface-900 border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-surface-700">Last Name</label>
-                <input type="text" defaultValue="User" className="w-full px-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" />
+                <input type="text" defaultValue="User" className="w-full px-4 py-2.5 bg-white text-surface-900 border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" />
               </div>
             </div>
             
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-surface-700">Email Address</label>
-              <input type="email" defaultValue="admin@university.edu" className="w-full px-4 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-surface-500 cursor-not-allowed" disabled />
+              <input type="email" defaultValue="admin@university.edu" className="w-full px-4 py-2.5 bg-surface-50 text-surface-900 border border-surface-200 rounded-xl cursor-not-allowed" disabled />
               <p className="text-xs text-surface-500">Contact IT support to change your primary email address.</p>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-surface-700">Role / Department</label>
-              <select className="w-full px-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
+              <select className="w-full px-4 py-2.5 bg-white text-surface-900 border border-surface-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
                 <option>Computer Science Dept.</option>
                 <option>Mathematics Dept.</option>
                 <option>Physics Dept.</option>
