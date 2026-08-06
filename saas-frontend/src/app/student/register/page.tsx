@@ -121,8 +121,8 @@ export default function StudentRegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-surface-700">ML Number (Roll No)</label>
-              <input type="text" name="mlNumber" value={formData.mlNumber} onChange={handleChange} className="w-full px-4 py-2 bg-white text-surface-900 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500" placeholder="ML-12345" />
+              <label className="text-sm font-medium text-surface-700">Father's Mobile Number</label>
+              <input type="text" name="mlNumber" value={formData.mlNumber} onChange={handleChange} className="w-full px-4 py-2 bg-white text-surface-900 border border-surface-200 rounded-xl focus:ring-2 focus:ring-brand-500" placeholder="e.g. +1 234 567 890" />
             </div>
 
             <div className="space-y-1">

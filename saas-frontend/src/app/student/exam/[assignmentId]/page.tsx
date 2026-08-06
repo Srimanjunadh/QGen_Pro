@@ -79,21 +79,43 @@ export default function ExamPage() {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  // Prevent copy/paste and context menu
+  const [isObscured, setIsObscured] = useState(false);
+
+  // Prevent copy/paste, context menu, and screenshots
   useEffect(() => {
     const preventCopy = (e: ClipboardEvent) => e.preventDefault();
     const preventContextMenu = (e: MouseEvent) => e.preventDefault();
+    const preventScreenshot = (e: KeyboardEvent) => {
+      if (
+        e.key === 'PrintScreen' ||
+        (e.metaKey && e.shiftKey) ||
+        (e.ctrlKey && (e.key === 'p' || e.key === 's' || e.key === 'c')) ||
+        (e.metaKey && (e.key === 'p' || e.key === 's' || e.key === 'c'))
+      ) {
+        e.preventDefault();
+        if (navigator.clipboard) navigator.clipboard.writeText('');
+        alert("Screenshots and printing are strictly prohibited during the exam.");
+      }
+    };
+    const handleBlur = () => setIsObscured(true);
+    const handleFocus = () => setIsObscured(false);
     
     if (isFullscreen) {
       document.addEventListener("copy", preventCopy);
       document.addEventListener("paste", preventCopy);
       document.addEventListener("contextmenu", preventContextMenu);
+      document.addEventListener("keydown", preventScreenshot);
+      window.addEventListener("blur", handleBlur);
+      window.addEventListener("focus", handleFocus);
     }
     
     return () => {
       document.removeEventListener("copy", preventCopy);
       document.removeEventListener("paste", preventCopy);
       document.removeEventListener("contextmenu", preventContextMenu);
+      document.removeEventListener("keydown", preventScreenshot);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
     };
   }, [isFullscreen]);
 
@@ -239,7 +261,7 @@ export default function ExamPage() {
   const currentQ = questions[currentQuestionIndex];
 
   return (
-    <div ref={containerRef} className="fixed inset-0 bg-surface-50 z-[100] flex flex-col overflow-hidden select-none">
+    <div ref={containerRef} className={`fixed inset-0 bg-surface-50 z-[100] flex flex-col overflow-hidden select-none transition-all duration-75 ${isObscured ? 'blur-xl opacity-0' : 'blur-0 opacity-100'}`}>
       {/* Watermark */}
       <div className="pointer-events-none fixed inset-0 flex items-center justify-center overflow-hidden opacity-5 z-0">
         <div className="transform -rotate-45 text-surface-900 text-[10rem] font-bold whitespace-nowrap">
