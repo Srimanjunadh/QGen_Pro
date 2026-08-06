@@ -109,7 +109,7 @@ export default function Home() {
         </form>
 
         <div className="mt-8 pt-6 border-t border-surface-200/10 text-center">
-          <button className="text-sm text-surface-200 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto group">
+          <button onClick={() => router.push("/student/login")} className="text-sm text-surface-200 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto group">
             Go to Student Portal
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>

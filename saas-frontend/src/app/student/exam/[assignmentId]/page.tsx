@@ -13,6 +13,7 @@ export default function ExamPage() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const answersRef = useRef<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(30); // 30 seconds per question
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
