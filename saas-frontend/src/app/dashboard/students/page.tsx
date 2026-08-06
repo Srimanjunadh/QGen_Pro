@@ -18,7 +18,7 @@ export default function StudentsPage() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/admin/students");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/admin/students`);
       const data = await res.json();
       setStudents(data);
     } catch (error) {
@@ -31,7 +31,7 @@ export default function StudentsPage() {
   const handleGenerateCodes = async () => {
     try {
       setGenerating(true);
-      const res = await fetch("http://localhost:8080/api/admin/generate-codes", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/admin/generate-codes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: generateCount })
@@ -48,7 +48,7 @@ export default function StudentsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`http://localhost:8080/api/admin/students/${id}/status`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/admin/students/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status })

@@ -23,7 +23,7 @@ export default function StudentDashboard() {
 
     const fetchAssignments = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/student/${studentData.id}/exams`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/student/${studentData.id}/exams`);
         const data = await res.json();
         setAssignments(data);
       } catch (error) {

@@ -30,7 +30,7 @@ export default function ExamPage() {
 
     const fetchExam = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/student/assignment/${assignmentId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/student/assignment/${assignmentId}`);
         const data = await res.json();
         setAssignment(data);
         if (data.paper && data.paper.content) {
@@ -162,7 +162,7 @@ export default function ExamPage() {
         detailedQuestions
       };
 
-      const res = await fetch(`http://localhost:8080/api/student/assignment/${assignmentId}/submit`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/student/assignment/${assignmentId}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers: currentAnswers, marks, reportData }),

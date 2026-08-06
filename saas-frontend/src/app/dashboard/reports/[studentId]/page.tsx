@@ -21,7 +21,7 @@ export default function AdminStudentReportView() {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/admin/students`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/admin/students`);
         const students = await res.json();
         const found = students.find((s: any) => s.id === studentId);
         setStudent(found);
