@@ -29,6 +29,30 @@ app.get("/", (req, res) => {
   res.send("SaaS Backend is running!");
 });
 
-app.listen(PORT, () => {
+import { prisma } from "./lib/prisma";
+import bcrypt from "bcrypt";
+
+const initializeAdmin = async () => {
+  try {
+    const adminExists = await prisma.user.findUnique({ where: { email: "Manju" } });
+    if (!adminExists) {
+      const hashedPassword = await bcrypt.hash("1122", 10);
+      await prisma.user.create({
+        data: {
+          name: "Manju Admin",
+          email: "Manju",
+          password: hashedPassword,
+          role: "ADMIN"
+        }
+      });
+      console.log("Default admin account 'Manju' created automatically.");
+    }
+  } catch (err) {
+    console.error("Failed to initialize admin:", err);
+  }
+};
+
+app.listen(PORT, async () => {
+  await initializeAdmin();
   console.log(`Server is running on port ${PORT}`);
 });
